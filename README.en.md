@@ -63,6 +63,9 @@ The upstream project already does a great job at "running a Debian desktop on An
 - The "Help" page lists: **upstream repo / this repo / open-source libraries / license**.
 - **Orientation is asked the first time you enter a graphical session**: landscape / portrait / **follow the phone** (works for VNC, Termux:X11 and termux-desktop).
 - New **launcher icon** (adaptive icon, including the Android 13+ themed `monochrome` layer).
+- **No icon on the desktop after installing** (since remake 9): `MAIN`/`LAUNCHER` lives on `LauncherAlias` with `android:enabled="false"`, so neither the launcher nor the app list shows an entry; "Settings → Desktop icon" turns it back on.
+  - The package is still **launchable**: a permanently-enabled `InfoAlias` (`MAIN` + `CATEGORY_INFO` + `CATEGORY_DEFAULT`, *not* a launcher entry) is what `PackageManager.getLaunchIntentForPackage()` resolves **first**.
+  - Third-party apps (shortcut creators, launcher organisers, automation scripts) can therefore still **discover and launch** this app while the desktop stays icon-free.
 - Wallpapers `4k.jpg` and `bz.png` are bundled in the container image.
 
 ---

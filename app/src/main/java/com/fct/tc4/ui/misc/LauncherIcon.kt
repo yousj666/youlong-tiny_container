@@ -28,6 +28,12 @@ import android.content.pm.PackageManager
  * 所以 **安装后桌面和应用列表里都不会出现图标**（游龙改版要求）。
  * 如需恢复图标，可在「设置 → 桌面图标」里打开；关掉即可再次隐藏。
  *
+ * ⚠️ 「隐藏桌面图标」**不等于**「应用不能被启动」：
+ * 清单里另有一个始终启用的 `InfoAlias`（`MAIN` + `CATEGORY_INFO` + `CATEGORY_DEFAULT`，
+ * 不是桌面入口），`PackageManager.getLaunchIntentForPackage()` 会优先命中它，
+ * 所以第三方 App（快捷方式创建器、启动器整理工具等）仍然能发现并拉起本应用。
+ * 本开关**只**影响 LauncherAlias（= 桌面上那个图标），不要去动 InfoAlias。
+ *
  * 注意：`setComponentEnabledSetting` 的状态只在该次安装内有效，
  * 重新安装 / 升级 APK 后会回到清单默认值（隐藏）。
  */

@@ -7,6 +7,49 @@
 
 ---
 
+## 游龙改版 11 — 修好「第三方 App 检测不到/无法启动本应用」
+*2026-09-12*
+
+### 问题
+改版 9 把 `MAIN`/`LAUNCHER` 从 `MainActivity` 搬到了 `android:enabled="false"` 的 `LauncherAlias` 上（为了「安装后桌面不显示图标」）。副作用是：**包里再也解析不到任何启动入口**，于是第三方 App 走
+`Android.openExternalApp` → `PackageManager.getLaunchIntentForPackage(pkg)` → `startActivity`
+这条路时拿到 `null`，判定「没装」并弹提示。
+
+原因是 `getLaunchIntentForPackage()` 的真实实现是：
+1. 先找 `ACTION_MAIN` + **`CATEGORY_INFO`**；
+2. 找不到才退化成 `ACTION_MAIN` + `CATEGORY_LAUNCHER`。
+   而 `LauncherAlias` 被禁用后，两个都解析不到 → 返回 `null`。
+   （它用的是 `MATCH_DEFAULT_ONLY` 解析，所以意图过滤器里必须有 `CATEGORY_DEFAULT`。）
+
+### 修复
+- **新增始终启用的「包入口」别名 `InfoAlias`**（`activity-alias` → `MainActivity`）：
+  ```xml
+  <intent-filter>
+      <action android:name="android.intent.action.MAIN" />
+      <category android:name="android.intent.category.INFO" />
+      <category android:name="android.intent.category.DEFAULT" />
+  </intent-filter>
+  ```
+  - `CATEGORY_INFO` 是 Android 官方为「这是本包的门面，但它**不是**桌面图标」提供的类别；**没有** `CATEGORY_LAUNCHER`，所以桌面 / 应用列表**依旧不会**出现图标，也不会变成响应 HOME 键的「默认桌面」。
+  - 它让 `getLaunchIntentForPackage()` 第 1 步就直接命中 → 第三方 App 能发现本应用并正常 `startActivity`。
+- 「设置 → 桌面图标」开关**只**控制 `LauncherAlias`（桌面那个图标），**不碰** `InfoAlias`，所以无论怎么切换，第三方 App 都能启动本应用。
+- `LauncherIcon.kt` 与清单注释同步说明两个别名的分工，避免以后又把 `InfoAlias` 关掉。
+
+### 兼容性
+- 需要 `versionCode` 不变：本版仍为 4，升级不会触发 `Global.shouldResetBootstrap`，**不会清空容器**。
+- 首次安装 / 重新安装后 `InfoAlias` 就生效，无需用户操作。
+
+### 交付
+- `YoulongContainer_游龙容器插件_v4.2.3_launchable.apk`
+  - 大小：**1,043,723,052 B**（995.37 MB）
+  - SHA-256：`E4BC4BF5615ADF738A05FF240AB7A8C36E88A3B558E9696E01B0A7772710001C`
+  - MD5：`7452CD3EB5FF394EDEA4DA1B04CE3742`
+  - 签名：V3.0，调试证书 `ce587445d4d624620c95422afac20cfeff0e291298ce707392cb6614816c6b6a`；`zipalign -c -p 4` 通过
+- **rootfs 未改动**（与改版 10 逐字节相同，仍是 `1,014,956,652 B` / 115,931 个成员）——本版只动清单与注释
+- 包内自检：`E:\tcwork\check_apk3.py` 已扩充到 **40 项断言**，新增：`InfoAlias` 存在、`enabled=true`、`targetActivity` 指向 `MainActivity`、带 `MAIN` + `CATEGORY_INFO` + `CATEGORY_DEFAULT`、**且不带 `CATEGORY_LAUNCHER`**（保证桌面依旧无图标）
+
+---
+
 ## 游龙改版 10 — 默认显示方式改回 AVNC + 真正修好「双击 exe 没反应」
 *2026-09-12*
 

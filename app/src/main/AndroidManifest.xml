@@ -30,7 +30,9 @@
             可用入口：
               1) 任意文件管理器 -> 分享/打开方式 -> 游龙容器插件（SEND，*/*）
               2) 已固定的桌面快捷方式（com.youlong.computer.action.SHORTCUT）
-              3) 应用内「设置 -> 桌面图标」把 LauncherAlias 打开即可恢复图标
+              3) 第三方 App / 桌面快捷方式创建器通过 getLaunchIntentForPackage 拉起
+                 （靠下面的 InfoAlias，见那段注释）
+              4) 应用内「设置 -> 桌面图标」把 LauncherAlias 打开即可恢复图标
         -->
         <activity
             android:name=".ui.main.MainActivity"
@@ -69,6 +71,42 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!--
+            「包入口」别名（游龙改版 11 新增）。
+
+            背景：第三方 App（包括桌面快捷方式创建器、启动器整理工具、脚本 App 等）
+            判断「这个包装没装、能不能启动」用的是
+                PackageManager.getLaunchIntentForPackage(pkg) != null
+            而这个 API 的内部实现是：
+                1) 先找 ACTION_MAIN + CATEGORY_INFO      （就是这里）
+                2) 找不到才退化去找 ACTION_MAIN + CATEGORY_LAUNCHER
+            改版 9 把 MAIN/LAUNCHER 放到了 enabled=false 的 LauncherAlias 上，
+            于是两个都解析不到 -> 返回 null -> 第三方 App 判定「没装」。
+
+            CATEGORY_INFO 是 Android 官方留给「这是本包的门面，但它不是桌面图标」的类别
+            （"Provides information about the package it is in"），
+            桌面 / 应用列表只按 MAIN+LAUNCHER 枚举，因此这里**不会**出现图标；
+            但 getLaunchIntentForPackage() 会优先命中它并正常 startActivity。
+            另外它不是响应 HOME 键的入口，也不会成为「默认桌面」。
+
+            注意：必须同时声明 CATEGORY_DEFAULT —— getLaunchIntentForPackage 用的是
+            MATCH_DEFAULT_ONLY 解析，少这一条会解析失败。
+        -->
+        <activity-alias
+            android:name=".ui.main.InfoAlias"
+            android:targetActivity=".ui.main.MainActivity"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/tc4_app_name"
+            android:roundIcon="@mipmap/ic_launcher_round">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.INFO" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity-alias>
 

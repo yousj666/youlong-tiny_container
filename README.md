@@ -76,6 +76,9 @@
 - 「帮助」页改为 4 项：**原版仓库 / 游龙改版仓库 / 开源库 / 许可证**。
 - **首次进入图形界面时询问屏幕方向**：横屏 / 竖屏 / **跟随手机**（选「跟随手机」后手机横过来界面就横过来）。VNC、Termux:X11、termux-desktop 都支持。
 - **应用图标**换成金龍图标（自适应图标，含 Android 13+ 主题图标 `monochrome`）。
+- **安装后桌面不显示图标**（改版 9 起）：`MAIN`/`LAUNCHER` 放在 `android:enabled="false"` 的 `LauncherAlias` 上，桌面与应用列表里都没有入口；「设置 → 桌面图标」可随时打开。
+  - 但**包仍然是"可被启动"的**：另有一个**始终启用**的 `InfoAlias`（`MAIN` + `CATEGORY_INFO` + `CATEGORY_DEFAULT`，**不是**桌面入口），`PackageManager.getLaunchIntentForPackage()` 会**优先**命中它。
+  - 所以第三方 App（桌面快捷方式创建器、启动器整理工具、自动化脚本等）照旧能**发现并拉起**本应用，只是桌面上不显示图标。
 - 容器内置壁纸 `4k.jpg`（黑底金龍）与 `bz.png`，桌面默认使用。
 
 ### 五、容器镜像
