@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <!-- 游龙改版注释红字 -->
+    <color name="tc4_help_youlong_red">#FFD32F2F</color>
+</resources>

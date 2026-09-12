@@ -1,0 +1,32 @@
+# 让 Windows / Linux / macOS 上的换行符保持一致
+* text=auto eol=lf
+
+# 二进制文件：不做任何换行转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.zst binary
+*.gz binary
+*.zip binary
+*.jar binary
+*.so binary
+*.exe binary
+*.dll binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+
+# Windows 脚本保持 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Gradle / Shell 启动脚本必须是 LF，否则 Linux、macOS、CI 上无法执行
+gradlew text eol=lf
+*.sh text eol=lf
+
+# 语言统计：让 GitHub 不要把生成物算进语言占比
+tools/** linguist-vendored

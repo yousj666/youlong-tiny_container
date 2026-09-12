@@ -1,0 +1,46 @@
+# ===== IDE / 系统 =====
+*.iml
+.idea
+.DS_Store
+Thumbs.db
+
+# ===== Gradle =====
+.gradle
+.kotlin
+/build
+/app/build
+/captures
+.externalNativeBuild
+.cxx
+
+# 本机 SDK / NDK 路径（因人而异，不要提交）
+local.properties
+/local.properties
+keystore.properties
+
+# ===== 容器镜像：体积过大，不随仓库分发 =====
+# rootfs.tar.zst 约 968MB，超出 GitHub 单文件 100MB 限制。
+# 想让「首次启动自动安装容器」生效，就自己准备一份镜像放到这个位置。
+app/src/main/assets/rootfs.tar.zst
+app/src/main/assets/rootfs.tar
+app/src/main/assets/*.zst
+/rootfs_cache/
+
+# ===== 构建产物 =====
+*.apk
+*.aab
+*.ap_
+*.aar
+*.idsig
+app/release/
+/dist/
+
+# ===== 签名密钥（切勿提交）=====
+*.jks
+*.keystore
+*.p12
+
+# ===== 日志 / 分析文件 =====
+*.log
+*.hprof
+/tmp/
