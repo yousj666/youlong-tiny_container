@@ -76,6 +76,7 @@ Tiny Container 以 GPL-3.0 发布，属于 **强著佐权（copyleft）** 协议
 - 新增 Steam 相关脚本：`/opt/tiny/steam/{steam-install.sh,steam-launch.sh,steam-stop.sh,steam-uninstall.sh,steam.desktop,README.md}` 与官方 `SteamSetup.exe`。
 - 新增抖音网页版脚本：`/opt/tiny/douyin/{douyin-web.sh,douyin-web.desktop,README.md}` 等。
 - 移除抖音 Windows 客户端（Electron 32 位在 ARM64 + Wine 下不可用）。
+- 修复「双击 exe 没反应」：新增 `/opt/tiny/extra/wine-run.sh`、`/opt/tiny/extra/wine-mime-fix.sh`，重写 `/usr/share/applications/wine.desktop`（改为调用 `wine-run.sh`、补全 `.exe/.dll/.bat` 等 MIME）与 `~/.config/mimeapps.list`（含 `[Added Associations]`），新增用户级 `~/.local/share/applications/wine.desktop` 与 Thunar 右键项「用 Wine 运行」，并加固 `/opt/tiny/extra/wine-autosetup.sh`（真实 `DISPLAY` 探测、`wineboot` 重试、失败不写就绪标记）。以上脚本均为本改版原创，与上游无关。
 - `.tiny.yaml`：容器名改为「游龙容器插件」、`preview` 指向 `4k.jpg`、`webpage` 指向本仓库、快捷命令组调整为 10 组、默认启用 `termux-desktop` 图形方式。
 
 > 注意：容器镜像（`app/src/main/assets/rootfs.tar.zst`）体积约 968 MB，**未随本仓库分发**（超出 GitHub 单文件限制）。镜像内同样包含 Debian 以及若干第三方软件，它们各自遵循自身许可证（主要是 GPL / LGPL / Apache-2.0 / MIT 等）。

@@ -7,6 +7,31 @@
 
 ---
 
+## 游龙改版 8 — 修复「双击 exe 没反应」
+*2026-09-12*
+
+### 修复
+- **问题**：把默认图形显示方式换成 `termux-desktop` 后，容器里双击 `.exe` 完全没反应（老版本正常）。
+- **根因**：exe 的打开方式一直是 `Exec=env WINEPREFIX=/home/tiny/.wine wine %f`，也就是裸调 `/usr/bin/wine`，这个入口本身非常脆弱：
+  - 不自己设置 `PATH` / `HOME` / `DISPLAY` / `XAUTHORITY`，完全靠桌面会话继承；
+  - 首次进入桌面时 Wine 还在后台安装（约 1~3 分钟），这段时间点击必然毫无反应；
+  - `wine-autosetup.sh` 原来**无条件**写 `.wine-ready`，即使 `wineboot` 失败也会被标记成“已就绪”，之后每次点击都静默失败；
+  - 只注册了系统级 `wine.desktop`，`~/.local/share/applications` 缺失、`mimeapps.list` 里没有 `[Added Associations]`，一旦关联没生效双击也没有任何提示。
+- **修复**（全部在 rootfs 层，不涉及安卓代码）：
+  1. **新增 `/opt/tiny/extra/wine-run.sh`（0755）**：所有 exe 入口统一走这个包装脚本——固定 `PATH`/`HOME`/`WINEPREFIX`/`DISPLAY`、探测 `XAUTHORITY`、Wine 未就绪时自动触发安装并等待、把安卓存储（没有可执行位）里的文件复制到容器内部再运行、`.msi` 走 `msiexec /i`、`wine` 调用失败时回退为“直接执行 PE（交给 proot `--wine=/usr/bin/wine` 接管）”，全过程写入 `/tmp/wine-run.log` 并弹桌面通知。
+  2. **新增 `/opt/tiny/extra/wine-mime-fix.sh`（0755）**：幂等重建 `wine.desktop` / `mimeapps.list` / 自启动项，修正权限并执行 `xdg-mime default`。
+  3. **`usr/share/applications/wine.desktop`** 改为调用 `wine-run.sh`，去掉 `TryExec=wine`（Wine 未装好时不再从菜单里消失），MIME 补全到 7 种（含 `application/x-dosexec`）；**`~/.config/mimeapps.list`** 增加 `[Added Associations]` 段；**新增用户级 `~/.local/share/applications/wine.desktop`** 双保险。
+  4. **Thunar 右键菜单新增「用 Wine 运行」**（`*.exe;*.msi;*.bat;*.cmd;*.com;*.lnk`），文件管理器里一定能跑起来。
+  5. **加固 `wine-autosetup.sh`**：补全 `PATH`；`dpkg -i` 不再把错误丢进 `/dev/null`；用循环等待真实 `DISPLAY`（最多 120s）而不是写死 `:6`；`wineboot` 失败自动重试 `-u`；**只有 `system.reg` 存在才写 `.wine-ready`**，否则通知用户并退出 1（避免“假就绪”）。
+  6. **`.tiny.yaml`**：`post_start_container_command` 同时启动安装脚本与关联修复脚本（间隔 3 秒）；Hangover 选项说明补充“首次 1~3 分钟”提示；「安装和卸载」组新增「查看 Wine 日志」「诊断 Wine 状态」；新增子组「运行 Windows 程序（运行 exe）」，含「运行 exe」「修复 exe 打开方式」「查看运行日志」。
+- 排障入口：双击没反应时先执行快捷命令「查看 Wine 日志」或「诊断 Wine 状态」，也可以直接看容器里的 `/tmp/wine-autosetup.log`、`/tmp/wine-run.log`、`/tmp/wine-mime-fix.log`。
+
+### 交付
+- `YoulongContainer_游龙容器插件_v4.2.3_exefix.apk`（1,043,878,476 B，SHA-256 `2D6E25C22E3355AC9DADE66EFA3B26243CFD45DFC507944DAE320D4CCA4B932A`）
+- rootfs：新增 3 个文件、替换 2 个、补丁 3 个 → zstd 压缩后 1,014,955,432 B（115,931 个成员，`.tiny.yaml` 44,724 B）
+
+---
+
 ## 游龙改版 7 — 默认显示方式改为 termux-desktop，图标改为 4K.jpg 金龍
 *2026-09-12*
 
