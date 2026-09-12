@@ -13,7 +13,7 @@
 > 科技不再是高高在上，而是服务于人民 —— 向开源精神致敬。
 
 本项目是 **[Cateners/tiny_container](https://github.com/Cateners/tiny_container)（Tiny Container / 小小容器）** 的改版，**一样是 GNU GPL-3.0 协议开源**。
-原项目已经把「在 Android 上跑 Debian 桌面」这件事做得很棒，本改版在此基础上补齐了中文用户最常用的一些场景：**内置 Steam、抖音网页版、真实电脑键盘、termux-desktop 显示方式、默认 termux-desktop、首次进入询问屏幕方向** 等等。
+原项目已经把「在 Android 上跑 Debian 桌面」这件事做得很棒，本改版在此基础上补齐了中文用户最常用的一些场景：**内置 Steam、抖音网页版、真实电脑键盘、termux-desktop 显示方式、默认 AVNC 显示、首次进入询问屏幕方向** 等等。
 
 > [!IMPORTANT]
 > 本改版同样**重度使用 AI** 辅助开发（代码逻辑、文案、翻译等），可能仍有未发现的 bug，请知悉。
@@ -25,15 +25,19 @@
 
 ## 本改版做了什么
 
-### 一、默认显示方式：termux-desktop
+### 一、默认显示方式：AVNC（VNC）
 
-- 新增**第三种图形显示方式 `termux-desktop`**，并把它设为**默认**图形显示方式（原版的默认是 VNC）。
+> 改版 10 起，容器默认图形显示方式已改回 **AVNC（内置 Xtigervnc）**，与上游一致。
+> 改版 6~9 期间曾把默认改成 `termux-desktop`；`termux-desktop` 与 `x11` 仍然保留，
+> 可以在「功能」卡片里随时切换（三者互斥）。
+
+- 新增**第三种图形显示方式 `termux-desktop`**（改版 6 加入，改版 10 起不再是默认）。
 - 支持 **13 种桌面环境**可选：Xfce、LXQt、Openbox、MATE、Cinnamon、KDE Plasma、i3、Fluxbox、IceWM、Awesome、dwm、bspwm、Window Maker。
 - 参考 [sabamdarif/termux-desktop](https://github.com/sabamdarif/termux-desktop) 的思路实现。上游是 Termux 原生安装器（依赖 `$PREFIX`），无法直接在 proot Debian 中运行，因此本改版改为：
   - rootfs 内只烧录轻量启动脚本（`/opt/tiny/termux-desktop/td-session.sh` 等）；
   - 桌面环境按需 `apt` 安装；
   - 复用容器内置的 Termux:X11 前端显示。
-- 图形显示方式互斥（`webview` / `avnc` / `x11` / `termux-desktop` 同时只能启用一个），改版里默认只启用 `termux-desktop`。
+- 图形显示方式互斥（`webview` / `avnc` / `x11` / `termux-desktop` 同时只能启用一个），改版里默认只启用 `avnc`。
 
 ### 二、电脑键盘模式（改版重点）
 

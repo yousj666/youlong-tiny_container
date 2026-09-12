@@ -7,6 +7,52 @@
 
 ---
 
+## 游龙改版 10 — 默认显示方式改回 AVNC + 真正修好「双击 exe 没反应」
+*2026-09-12*
+
+本版包含 **① 默认图形显示方式改回 `avnc`；② 修掉改版 8 之后仍然存在的「双击 exe 没反应」**。
+
+### 变更 1：默认显示方式改回 AVNC（VNC）
+- `.tiny.yaml` 里四种互斥的显示方式（`webview` / `avnc` / `x11` / `termux-desktop`）默认启用项由 `termux-desktop` 改回 **`avnc`**，与上游一致。改版 6~9 期间曾默认 `termux-desktop`。
+- 只是**默认值**变化：三种图形方式（VNC / Termux:X11 / Termux Desktop）都还在，「功能」卡片里可随时切换。
+- 为什么改回来（与本版第 2 条直接相关）：
+  - `avnc` 用的是**容器内置的 `Xtigervnc`**（`-rfbunixpath /tmp/.tiny.vnc … :6`），容器里**一定**会有真实的 `/tmp/.X11-unix/X6`；
+  - `termux-desktop` / `x11` 走的是**安卓侧的 Termux:X11** 前端，容器内**通常没有** `/tmp/.X11-unix/X6`，容器里的进程拿不到可用的 X。
+
+### 变更 2：真正修好「双击 exe 没反应」
+改版 8 已经做了一整轮修复（新增 `wine-run.sh`、`wine-mime-fix.sh`，重写 `.desktop` 与 `mimeapps.list`），但用户实测**仍然不行**。本版定位到真正的根因：
+
+1. **改版 7 把默认显示方式换成了 `termux-desktop`**，容器内通常没有 `/tmp/.X11-unix/X6`（见上）。
+2. **改版 8 的 `wine-autosetup.sh` 判断 X 是否就绪的方式不可靠**：它扫描 `/tmp/.X11-unix/X*`，只要找到**任意**一个 socket 就无条件 `export DISPLAY=":$n"` —— 而 `termux-desktop` 下这个 socket 根本不存在，120 秒扫完仍拿不到可用 X；即使侥幸扫到残留 socket，也会把 `DISPLAY` 指到一个**不可用**的 X 上。
+3. 结果：`wineboot --init` 连不上 X → **Wine 前缀从未初始化** → `$WINEPREFIX/system.reg` 永远不出现 → `wine-run.sh` 判定「Wine 不可用」后**静默退出** → 用户看到的就是「双击完全没反应」。
+   - 这也解释了「**之前可以现在不行**」：改版 6 及更早默认是 `avnc`，那时容器内 X 真实存在，同一个脚本能正常工作。
+
+**修复内容（全部在 rootfs 层）：**
+
+- **`/opt/tiny/extra/wine-autosetup.sh`**
+  - 新增 `x_reachable()`：优先用 `xdpyinfo`（回退 `xset q`）**真实探测 X 是否可达**，只有工具都缺失时才退回「socket 文件是否存在」的粗判断；
+  - `wait_x()` 改为：当前 `DISPLAY` 可达就**立即返回**；扫描到其他 socket 时**只有验证它确实可达**才切换 `DISPLAY`（不再无条件改写）；
+  - 等待上限 **120s → 45s**，超时不再死等；
+  - 触发条件从 `[ -n "$DISPLAY" ] || [ -d /tmp/.X11-unix ]` 收紧为 `[ -n "$DISPLAY" ]`，避免完全无图形环境时白等。
+- **`/opt/tiny/extra/wine-run.sh`**（加固）
+  - 就绪判断**去掉 `wineserver` 依赖**（`command -v wine` + `$WINEPREFIX/system.reg` 足够），少一个失败点；
+  - 支持 `file://` URL 与常见转义（`%20 %23 %26 %2B %3D %25`）解码，从文件管理器/浏览器拖过来的路径也能跑；
+  - 自动把**同目录**的少量伴随文件（`dll/ini/dat/cfg/txt/bin/sig/pak/msi/cab/ico/bmp/png/xml/json/db`，单个 ≤32 MiB、合计 ≤256 MiB）一并复制进容器（安卓存储没有可执行位、大文件复制太慢，所以设了上限）；
+  - 日志除了 `/tmp/wine-run.log`，还会同步一份到 **`/mnt/sdcard/wine-run.log`**，用手机文件管理器就能直接看，便于自检。
+- 排障入口不变：快捷命令「查看 Wine 日志」「诊断 Wine 状态」「修复 exe 打开方式」。
+
+### 交付
+- `YoulongContainer_游龙容器插件_v4.2.3_avnc-exefix.apk`
+  - 大小：**1,043,723,052 B**（995.37 MB）
+  - SHA-256：`E99D9F02F27AECFF44ED16480EC85AE4C06D29AA59D67D589CE93F94D33D23DB`
+  - MD5：`D65EC3866B48F8137453804ADA60BE0E`
+  - 签名：V3.0，调试证书 `ce587445d4d624620c95422afac20cfeff0e291298ce707392cb6614816c6b6a`；`zipalign -c -p 4` 通过
+- **rootfs 本轮有改动**（与改版 9 不同）：`.tiny.yaml` 默认显示方式改回 `avnc`，`wine-autosetup.sh` 6,194 → 7,147 B，`wine-run.sh` 4,408 → 6,841 B；重新打包后 **115,931 个成员**，zstd 压缩后 **1,014,956,652 B**
+- 包内自检：`E:\tcwork\check_apk3.py`（图标/清单，33 项）+ `E:\tcwork\check_r10.py`（rootfs 内容，含 `.tiny.yaml` 默认 `avnc`、脚本特征、zstd 无损、APK 内 rootfs 与源文件 SHA-256 一致）
+- ⚠️ **不改 `versionCode`**（仍为 4）：`Global.shouldResetBootstrap` 在版本号变化时会重置并重新解压容器，会清掉用户数据
+
+---
+
 ## 游龙改版 9 — 启动图标换成 4k.jpg 金龍 + 安装后桌面不显示图标
 *2026-09-12*
 

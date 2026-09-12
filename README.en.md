@@ -10,7 +10,7 @@
 [![Based on](https://img.shields.io/badge/based%20on-Cateners%2Ftiny__container-orange.svg)](https://github.com/Cateners/tiny_container)
 
 This is a fork / remake of **[Cateners/tiny_container](https://github.com/Cateners/tiny_container)**, released under the **same GNU GPL-3.0** license.
-The upstream project already does a great job at "running a Debian desktop on Android". This remake adds the things Chinese-speaking users ask for most: a built-in Steam, Douyin (TikTok China) web version, a **real PC keyboard** panel, a **termux-desktop** display mode (**now the default**), an orientation prompt on first launch, and more.
+The upstream project already does a great job at "running a Debian desktop on Android". This remake adds the things Chinese-speaking users ask for most: a built-in Steam, Douyin (TikTok China) web version, a **real PC keyboard** panel, a **termux-desktop** display mode, an **AVNC default** display, an orientation prompt on first launch, and more.
 
 > [!IMPORTANT]
 > Like upstream, this project makes **heavy use of AI** (code logic, wording, translations). Some bugs may remain — please be aware.
@@ -21,15 +21,19 @@ The upstream project already does a great job at "running a Debian desktop on An
 
 ## What this remake changes
 
-### 1. Default display mode: termux-desktop
+### 1. Default display mode: AVNC (VNC)
 
-- A **third graphical display mode `termux-desktop`** was added and made the **default** one (upstream defaults to VNC).
+> Since remake 10, the default graphical display mode is back to **AVNC (built-in Xtigervnc)**, matching upstream.
+> Remakes 6–9 had made `termux-desktop` the default; both `termux-desktop` and `x11` are still available and can be
+> switched at any time from the "Features" card (the three are mutually exclusive).
+
+- A **third graphical display mode `termux-desktop`** was added (remake 6; no longer the default since remake 10).
 - **13 desktop environments** to choose from: Xfce, LXQt, Openbox, MATE, Cinnamon, KDE Plasma, i3, Fluxbox, IceWM, Awesome, dwm, bspwm, Window Maker.
 - Inspired by [sabamdarif/termux-desktop](https://github.com/sabamdarif/termux-desktop). The upstream installer is Termux-native (depends on `$PREFIX`) and cannot run inside a proot Debian, so here:
   - only lightweight session scripts are baked into the rootfs (`/opt/tiny/termux-desktop/td-session.sh`, ...);
   - desktop environments are installed on demand via `apt`;
   - the built-in Termux:X11 frontend is reused for display.
-- Display modes are mutually exclusive (`webview` / `avnc` / `x11` / `termux-desktop`); this remake enables only `termux-desktop` by default.
+- Display modes are mutually exclusive (`webview` / `avnc` / `x11` / `termux-desktop`); this remake enables only `avnc` by default.
 
 ### 2. PC keyboard mode
 
