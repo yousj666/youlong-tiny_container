@@ -43,7 +43,8 @@ Tiny Container 以 GPL-3.0 发布，属于 **强著佐权（copyleft）** 协议
 
 - `applicationId`：`com.fct.tc4` → `com.youlong.computer`（`namespace` 仍为 `com.fct.tc4`，以避免大规模改动上游代码）。
 - 应用名：`Tiny Container` → `游龙容器插件`（30 余个语言目录同步补齐）。
-- 启动图标：改为黑底金龍自适应图标（`mipmap-anydpi-v26/ic_launcher.xml`、`mipmap-*/ic_launcher_foreground.png`、`mipmap-*/ic_launcher_monochrome.png`、`mipmap-*/ic_launcher_round.png`、`values/ic_launcher_background.xml`）。
+- 启动图标：黑底金龍自适应图标（`mipmap-anydpi-v26/ic_launcher.xml`、`mipmap-*/ic_launcher_foreground.png`、`mipmap-*/ic_launcher_monochrome.png`、`mipmap-*/ic_launcher_round.png`、`mipmap-*/ic_launcher.png`、`values/ic_launcher_background.xml`）。全部由 `4k.jpg` 重新生成：前景层按「完整图片 = 画布 72/108 并居中」的自适应几何制作，`monochrome` 为同几何的白色剪影；`ic_launcher.png` / `ic_launcher_round.png` 为 48/72/96/144/192 的方形光栅（兼作旧式兵底，同时避免第三方 AAR 的 `ic_launcher` 位图在资源合并中抢占）。
+- 应用安装后**桌面不显示图标**：`MAIN` / `LAUNCHER` 从 `.ui.main.MainActivity` 移到 `android:enabled="false"` 的 `<activity-alias android:name=".ui.main.LauncherAlias">`，安装后无启动器入口；可在应用内「设置 → 桌面图标」开关恢复。隐藏后仍可通过「分享/打开方式」或桌面固定快捷方式启动。
 
 ### 4.2 新增文件（本改版原创）
 
@@ -54,11 +55,13 @@ Tiny Container 以 GPL-3.0 发布，属于 **强著佐权（copyleft）** 协议
 | `app/src/main/java/com/fct/tc4/ui/page/LaunchFragment.kt` | 首页「启动」大按钮页 |
 | `app/src/main/java/com/fct/tc4/ui/page/X11DisplayActivity.kt` | 继承 termux-x11 的 `MainActivity`，加入屏幕方向询问与同步 |
 | `app/src/main/res/drawable/ic_tc4_keyboard.xml` | 键盘按钮图标 |
+| `app/src/main/java/com/fct/tc4/ui/misc/LauncherIcon.kt` | 桌面图标（启动器别名）开关封装：`isEnabled` / `setEnabled` |
 
 ### 4.3 修改的上游文件（主要）
 
 - `app/build.gradle.kts`：`applicationId`、`noCompress += "zst"`（rootfs 已是 zstd 高压缩，避免 aapt2 二次 deflate）。
-- `AndroidManifest.xml`：`.ui.page.X11DisplayActivity` 声明等。
+- `AndroidManifest.xml`：`.ui.page.X11DisplayActivity` 声明；`MAIN` / `LAUNCHER` 移至 `.ui.main.LauncherAlias` 别名（`enabled=false`）。
+- `app/src/main/java/com/fct/tc4/ui/page/SettingsViewModel.kt`：新增「桌面图标」开关项。
 - `app/src/main/java/com/fct/tc4/Tc4Application.kt`：注册键盘接管。
 - `app/src/main/java/com/fct/tc4/ui/main/MainActivity.kt`：首次启动法律声明弹窗。
 - `app/src/main/java/com/fct/tc4/ui/page/FeaturesViewModel.kt`：新增 `termux-desktop` 功能类型、13 种桌面环境列表、图形方式互斥逻辑。

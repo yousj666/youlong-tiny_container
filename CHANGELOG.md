@@ -7,6 +7,43 @@
 
 ---
 
+## 游龙改版 9 — 启动图标换成 4k.jpg 金龍 + 安装后桌面不显示图标
+*2026-09-12*
+
+本版包含两个独立改动：**① 桌面图标真正换成 `4k.jpg` 的金龍；② 应用安装后桌面/应用列表里不再出现图标。**
+
+### 变更 1：启动图标（`4k.jpg` 金龍）
+排查后确认，上一版图标"不是我给的那张图"有 **三个** 叠加原因，本版逐个修掉：
+
+1. **`monochrome`（Android 13+ 主题图标层）用的是无关素材**。开启「主题图标」的手机上，系统只拿 `monochrome` 层染色显示，于是看到的是完全另一个图案。现已用同一几何 + 亮度转 alpha 重做成**金龍的白色剪影**。
+2. **本工程缺 `mipmap-*/ic_launcher.png` 光栅**，导致 AVNC AAR 自带的 `mipmap/ic_launcher`（蓝色 AVNC logo）在资源合并中胜出。MT 管理器 / 各种 APK 图标提取工具、以及 API<26 的旧路径都会读到那个**蓝色图标**。现已补上自己的光栅（48/72/96/144/192），彻底杜绝。
+3. **前景层的自适应几何不对**。自适应画布是 108dp，系统只显示中间 72dp。上一版把整张 1652×1652 的 `4k.jpg` 铺满整张 108dp 画布，遮罩会把图片四周各 1/6 裁掉 —— 构图与 `4k.jpg` 不一致。现改为把**完整的 `4k.jpg` 缩放到正好 72/108 画布并居中**，遮罩后的结果与原图构图逐像素一致（实测 diff = 0.00，四角留黑与纯黑背景自然衔接）。
+
+- 15 个自适应图层 + 5 个方形光栅 + 5 个圆形图标全部由 `E:\tcwork\mkicon.py` 从 `4k.jpg` 重新生成，可复现（只依赖 PIL）。
+- 验收图：`E:\tcwork\icon_final_verify.png`（直接读 APK 内图层渲染的 4 格对照）、`E:\tcwork\icon_ratio_cmp.png`（72/108 vs 90% vs 100% 三种构图比例对照）。
+- 备注：若希望金龍在图标里更大，只需把 `mkicon.py` 里的 `VISIBLE_RATIO` 由 `72/108` 改为 `0.90`~`1.00` 重新生成即可（本图边缘是纯黑，加大比例只会裁掉黑边，不会出现突兀的切边）。
+
+### 变更 2：安装后桌面不显示图标（可逆）
+- **做法**：把 `MAIN` / `LAUNCHER` 从 `.ui.main.MainActivity` 搬到 **`android:enabled="false"` 的 `<activity-alias>`**（`.ui.main.LauncherAlias`）。清单默认关闭 → **装完桌面和应用列表里都没有图标**，且不会出现"装完再也进不去"的死路。
+- `MainActivity` 保留两个入口，隐藏后仍可用：
+  1. **分享/打开方式**：任意文件管理器选「游龙容器插件」即可启动（`SEND` / `SEND_MULTIPLE`，`mimeType="*/*"`）；
+  2. **桌面固定快捷方式**：`com.youlong.computer.action.SHORTCUT` 不受启动图标影响，隐藏后照旧可用。
+- **新增 `app/src/main/java/com/fct/tc4/ui/misc/LauncherIcon.kt`**：`isEnabled()` / `setEnabled()` 封装 `setComponentEnabledSetting`。
+- **设置页新增「桌面图标」开关**（`SettingsViewModel` + EN / 简体 / 繁體 三语言文案）：打开即恢复普通图标，关闭重新隐藏。
+- ⚠️ `setComponentEnabledSetting` 的状态只在**本次安装**内有效，重装或升级 APK 会回到清单默认值（隐藏）。
+- ⚠️ **不改 `versionCode`**：`Global.shouldResetBootstrap` 在版本号变化时会重置并重新解压容器，会清掉用户数据。
+
+### 交付
+- `YoulongContainer_游龙容器插件_v4.2.3_hiddenicon.apk`
+  - 大小：**1,043,718,956 B**（995.37 MB）
+  - SHA-256：`FBCDE973ECC973358BA778A358E86DC23D99715EA91A5DA3624AEFA8627AA36F`
+  - MD5：`4BCE550899997784D4CB82206393AC86`
+  - 签名：V3.0，调试证书 `ce587445d4d624620c95422afac20cfeff0e291298ce707392cb6614816c6b6a`；`zipalign -c -p 4` 通过
+- rootfs **未改动**（本轮只在 APK/清单层改动，`app/src/main/assets/rootfs.tar.zst` 与上一版逐字节相同）
+- 包内自检：`E:\tcwork\check_apk3.py`（33 项断言全部通过：badging 无 `launchable-activity`、别名 `enabled=false` 且仍带 `MAIN`+`LAUNCHER`、`versionCode` 仍为 4、20 张图标图层均由 `4k.jpg` 生成）
+
+---
+
 ## 游龙改版 8 — 修复「双击 exe 没反应」
 *2026-09-12*
 

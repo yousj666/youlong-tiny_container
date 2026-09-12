@@ -80,6 +80,8 @@
     <string name="tc4_settings_title">設定</string>
     <string name="tc4_settings_description">這裡可以進行軟體相關設定！\n針對特定容器的設定見「功能」或「捷徑-選項」。</string>
     <string name="tc4_settings_shortcut_title">啟動器捷徑產生器</string>
+    <string name="tc4_settings_launcher_icon_title">桌面圖示</string>
+    <string name="tc4_settings_launcher_icon_desc">預設關閉：安裝後桌面與應用程式清單都不會顯示圖示。\n打開即可恢復一般圖示，關閉則重新隱藏。\n沒有圖示時，用任意檔案管理器「分享/開啟方式」選「游龍容器插件」即可啟動本應用程式。\n重新安裝或升級後會自動恢復為「隱藏」</string>
     <string name="tc4_settings_shortcut_desc">為當前容器產生桌面捷徑，直接點選執行命令</string>
     <string name="tc4_settings_auto_launch_title">自動啟動容器</string>
     <string name="tc4_settings_auto_launch_desc">下次啟動容器時生效</string>

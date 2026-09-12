@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.fct.tc4.R
 import com.fct.tc4.ui.misc.Global
+import com.fct.tc4.ui.misc.LauncherIcon
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -75,12 +76,21 @@ class SettingsViewModel(
             "auto_launch_gui" -> Global.autoLaunchGui = newChecked
             "reset_bootstrap" -> Global.shouldResetBootstrap = newChecked
             "use_legacy_proot" -> Global.useLegacyProot = newChecked
+            // 桌面图标（启动器入口）开关：默认关闭，见 LauncherIcon
+            "launcher_icon" -> LauncherIcon.setEnabled(getApplication(), newChecked)
         }
         refresh()
     }
 
     private fun refresh() {
         _items.value = listOf(
+            // 放在最前面：应用默认没有桌面图标，这是恢复图标的唯一入口
+            SwitchSetting(
+                id = "launcher_icon",
+                titleRes = R.string.tc4_settings_launcher_icon_title,
+                descriptionRes = R.string.tc4_settings_launcher_icon_desc,
+                isChecked = LauncherIcon.isEnabled(getApplication())
+            ),
             ActionSetting(
                 id = "launcher_shortcut",
                 titleRes = R.string.tc4_settings_shortcut_title,

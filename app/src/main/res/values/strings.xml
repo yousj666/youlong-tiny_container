@@ -89,6 +89,8 @@
     <!-- ==================== Settings Page ==================== -->
     <string name="tc4_settings_title">Settings</string>
     <string name="tc4_settings_description">Configure app settings here!\nFor container-specific settings, see "Features" or "Shortcuts - Options".</string>
+    <string name="tc4_settings_launcher_icon_title">Launcher Icon</string>
+    <string name="tc4_settings_launcher_icon_desc">Off by default: after installing, no icon appears on the home screen or in the app list.\nTurn it on to get a normal launcher icon back; turn it off to hide it again.\nWhile there is no icon, start the app by sharing any file to "Youlong Container Plugin".\nReinstalling or updating the app resets this to hidden</string>
     <string name="tc4_settings_shortcut_title">Launcher Shortcut Generator</string>
     <string name="tc4_settings_shortcut_desc">Create a desktop shortcut for the current container to run commands directly</string>
     <string name="tc4_settings_auto_launch_title">Auto-launch Container</string>

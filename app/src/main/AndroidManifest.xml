@@ -23,16 +23,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TinyContainer"
         >
+        <!--
+            MainActivity 本身不再是启动器入口：
+            MAIN/LAUNCHER 移到了下面 enabled=false 的 LauncherAlias 别名上，
+            因此安装后桌面与应用列表都不会出现图标。
+            可用入口：
+              1) 任意文件管理器 -> 分享/打开方式 -> 游龙容器插件（SEND，*/*）
+              2) 已固定的桌面快捷方式（com.youlong.computer.action.SHORTCUT）
+              3) 应用内「设置 -> 桌面图标」把 LauncherAlias 打开即可恢复图标
+        -->
         <activity
             android:name=".ui.main.MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-
 
             <!-- Import files to public folder (any format) -->
             <intent-filter android:label="@string/tc4_import_file_label">
@@ -48,6 +52,25 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <!--
+            桌面图标开关（默认关闭 = 安装后不显示图标）。
+            通过 PackageManager.setComponentEnabledSetting 运行时开启/关闭，
+            重新安装或升级 APK 后会恢复成清单里的默认值（隐藏）。
+        -->
+        <activity-alias
+            android:name=".ui.main.LauncherAlias"
+            android:targetActivity=".ui.main.MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/tc4_app_name"
+            android:roundIcon="@mipmap/ic_launcher_round">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
 
         <activity
             android:name=".ui.page.WebViewActivity"
