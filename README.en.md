@@ -1,5 +1,21 @@
 **English** | [简体中文](README.md)
 
+> [!IMPORTANT]
+> ## ⚠️ This repository is a SECONDARY OPEN SOURCE project — not an original work
+>
+> It is a **remake / secondary development (fork)** of **[Cateners/tiny_container](https://github.com/Cateners/tiny_container) (Tiny Container)**, continued by **iill392** on top of upstream, and is **not affiliated with the original author**.
+>
+> | | |
+> | --- | --- |
+> | Upstream project | [Cateners/tiny_container](https://github.com/Cateners/tiny_container) — Tiny Container |
+> | Upstream author | **Caten Hu (Cateners)** — catenhu@gmail.com |
+> | Upstream copyright | Copyright (C) 2026 Caten Hu |
+> | Author of this repo | 游龙 (iill392) — **new and modified parts only** |
+> | License | **GNU GPL-3.0-or-later** (same as upstream = secondary open source) |
+> | Change list | See [`NOTICE.md`](NOTICE.md), section 4 |
+>
+> "Secondary open source" means **open-sourcing again on top of an existing open source project**. Most of the core code comes from upstream; this is **not an original work from scratch**. The original author does not maintain this repository — please report upstream issues upstream. See the original at <https://github.com/Cateners/tiny_container>.
+
 # Youlong Container Plugin · youlong-tiny_container
 
 > Linux is powerful. Linux can also be easy to use.
@@ -105,6 +121,11 @@ echo "sdk.dir=/path/to/Android/sdk" > local.properties
 ## License
 
 **GNU General Public License v3.0 or later**, identical to upstream. See [COPYING](COPYING) and [NOTICE.md](NOTICE.md).
+
+> **Restated: this repository is a SECONDARY OPEN SOURCE project.** Of the two copyright lines below, the first
+> (Caten Hu / upstream Tiny Container) is the **basis and main source** of this code base; this project only
+> builds on top of it and is **not an original work from scratch**. See [NOTICE.md](NOTICE.md) for the full
+> attribution and change list.
 
 ```
 Copyright (C) 2026 Caten Hu        (upstream Tiny Container)

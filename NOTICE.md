@@ -1,5 +1,11 @@
 # 版权与来源声明 / Copyright & Attribution Notices
 
+> [!IMPORTANT]
+> **本仓库是「二次开源项目」（Secondary Open Source Project），不是原创作品。**
+> 它是 **[Cateners/tiny_container](https://github.com/Cateners/tiny_container)（Tiny Container / 小小容器）** 的改版 / 二次开发（fork · remake）。
+> 上游作者 **Caten Hu (Cateners)** 与本仓库作者 **游龙 (iill392)** 不是同一人；本仓库作者**仅对新增与修改的部分**享有著作权，
+> 整体仍以上游的 **GNU GPL-3.0-or-later** 授权（即「在上游开源项目基础上继续开源」）。详见下文第 1、2、3 节。
+
 本文件说明 **youlong-tiny_container（游龙容器插件）** 的来源、版权归属与第三方组件许可。
 
 ---

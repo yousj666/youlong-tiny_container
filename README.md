@@ -1,5 +1,24 @@
 [English](README.en.md) | **简体中文**
 
+> [!IMPORTANT]
+> ## ⚠️ 本仓库是「二次开源项目」，不是原创作品
+>
+> 本项目是 **[Cateners/tiny_container](https://github.com/Cateners/tiny_container)（Tiny Container / 小小容器）** 的
+> **改版 / 二次开发（fork · remake）**，由 **游龙 (iill392)** 在上游基础上继续开发，**与原作者不是同一人**。
+>
+> | | |
+> | --- | --- |
+> | 上游项目 | [Cateners/tiny_container](https://github.com/Cateners/tiny_container) — Tiny Container（小小容器） |
+> | 上游作者 | **Caten Hu (Cateners)** — catenhu@gmail.com |
+> | 上游版权 | Copyright (C) 2026 Caten Hu |
+> | 本仓库作者 | 游龙 (iill392) — **仅对新增与修改的部分** |
+> | 许可证 | **GNU GPL-3.0-or-later**（沿用上游同一许可证 = 二次开源） |
+> | 修改清单 | 逐项见 [`NOTICE.md`](NOTICE.md) 第 4 节 |
+>
+> 「二次开源」的意思是：**在一个已有的开源项目基础上继续开源**。本仓库建立在别人的劳动成果之上，
+> 大量核心代码来自上游，**不是从零原创**。原作者不是本仓库的维护者，上游自身的问题请找上游，
+> 只有本改版引入的问题才属于本仓库。想了解原版请前往 <https://github.com/Cateners/tiny_container>。
+
 # 游龙容器插件 · youlong-tiny_container
 
 > Linux 很强大，Linux 也可以很好用。
@@ -172,6 +191,10 @@ $BT/apksigner verify --print-certs app-aligned.apk
 ## 许可证
 
 本项目以 **GNU General Public License v3.0 or later** 发布，与上游完全一致。完整协议见 [COPYING](COPYING)，版权与来源说明见 [NOTICE.md](NOTICE.md)。
+
+> **再次声明：本仓库是「二次开源项目」。** 上面两行版权中，第一行（Caten Hu / 上游 Tiny Container）
+> 才是本项目的**代码基础与主要来源**；本项目只在其上做二次开发，**不是从零原创**。
+> 完整版权归属与修改清单见 [NOTICE.md](NOTICE.md)。
 
 ```
 Copyright (C) 2026 Caten Hu          （上游 Tiny Container）
