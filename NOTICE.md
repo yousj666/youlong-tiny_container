@@ -79,8 +79,10 @@ Tiny Container 以 GPL-3.0 发布，属于 **强著佐权（copyleft）** 协议
 - 新增 Steam 相关脚本：`/opt/tiny/steam/{steam-install.sh,steam-launch.sh,steam-stop.sh,steam-uninstall.sh,steam.desktop,README.md}` 与官方 `SteamSetup.exe`。
 - 新增抖音网页版脚本：`/opt/tiny/douyin/{douyin-web.sh,douyin-web.desktop,README.md}` 等。
 - 移除抖音 Windows 客户端（Electron 32 位在 ARM64 + Wine 下不可用）。
+- **内置微信（改版 12）**：把腾讯官方发布的 **ARM64（aarch64）原生 Linux 微信**发行包（`WeChatLinux_arm64.deb`，版本 4.1.13.23）解包后烧录进镜像的 `/opt/wechat`，不经过 Wine。新增本改版原创的管理脚本与桌面入口：`/opt/tiny/wechat/{wechat-run.sh,wechat-doctor.sh,wechat-uninstall.sh,wechat-reinstall.sh,README.md}`、`/usr/bin/wechat`、`/usr/share/applications/wechat.desktop`、`~/.local/share/applications/wechat.desktop`、`~/桌面/微信.desktop`，并在 `.tiny.yaml` 新增顶层快捷命令组「微信」、把「软件管理 → 常用国产软件 → 微信」标记为「已内置」（原在线安装命令保留）。
+  - ⚠️ **微信是腾讯公司的专有软件（proprietary），并非开源项目**，其版权与许可归腾讯所有。本改版只是把腾讯**官方公开发布**的 Linux ARM64 安装包原样内置进容器镜像，未做任何逆向、修改或破解；镜像内该部分**不适用 GPL-3.0**，仅按腾讯自身的使用条款分发。如权利人提出异议，本改版会立即下架该部分。使用者亦可随时用「微信 → 卸载微信」自行移除，或用「重新安装 / 升级微信」重新联网获取官方包。
 - 修复「双击 exe 没反应」：新增 `/opt/tiny/extra/wine-run.sh`、`/opt/tiny/extra/wine-mime-fix.sh`，重写 `/usr/share/applications/wine.desktop`（改为调用 `wine-run.sh`、补全 `.exe/.dll/.bat` 等 MIME）与 `~/.config/mimeapps.list`（含 `[Added Associations]`），新增用户级 `~/.local/share/applications/wine.desktop` 与 Thunar 右键项「用 Wine 运行」，并加固 `/opt/tiny/extra/wine-autosetup.sh`（真实 `DISPLAY` 探测、`wineboot` 重试、失败不写就绪标记）。以上脚本均为本改版原创，与上游无关。
-- `.tiny.yaml`：容器名改为「游龙容器插件」、`preview` 指向 `4k.jpg`、`webpage` 指向本仓库、快捷命令组调整为 10 组、默认启用 `termux-desktop` 图形方式。
+- `.tiny.yaml`：容器名改为「游龙容器插件」、`preview` 指向 `4k.jpg`、`webpage` 指向本仓库、快捷命令组调整为 11 组、默认启用 `avnc` 图形方式。
 
 > 注意：容器镜像（`app/src/main/assets/rootfs.tar.zst`）体积约 968 MB，**未随本仓库分发**（超出 GitHub 单文件限制）。镜像内同样包含 Debian 以及若干第三方软件，它们各自遵循自身许可证（主要是 GPL / LGPL / Apache-2.0 / MIT 等）。
 

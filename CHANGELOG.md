@@ -7,6 +7,65 @@
 
 ---
 
+## 游龙改版 12 — 系统内置微信（ARM64 原生版，开箱即用）
+*2026-09-18*
+
+### 需求
+「给系统内置一个微信」——不是再给一条「在线安装」的快捷命令，而是希望装好本应用后，**容器里本来就有微信**。
+
+### 方案：内置腾讯官方的 **ARM64 原生** Linux 微信（完全不经过 Wine）
+- 腾讯已经推出 **Linux 原生版微信**（<https://linux.weixin.qq.com/>），官方同时提供 **arm64 / aarch64** 架构的 `deb` 包，那本身就是 **ARM64 原生二进制**。
+- 容器正是 arm64-v8a 的 proot Debian，**原生 ARM64 程序可以直接运行，不需要任何指令翻译**，所以把它直接烧进镜像即可。
+- 镜像内该部分使用官方包 `WeChatLinux_arm64.deb`（`Package: wechat` 4.1.13.23），解包后完整落到 `/opt/wechat`。
+
+### 可行性核对（做的功课）
+- 解析全部 **106 个 ELF** 的 `DT_NEEDED`，只有 25 个 soname 在系统里找不到，而它们**全部都在 `/opt/wechat` 里自带**（`libilink2.so`、`libmmmojo.so`、`libwxocr.so`、`libvlc.so.5`…）→ **对系统库零额外依赖**。
+- 镜像里已有 `wqy-microhei / wqy-zenhei` 中文字体，deb 声明的 `fonts-noto-cjk` 依赖实际上已满足（需要时可用「微信自检 / 修复」补装）。
+- 镜像本来就支持符号链接（已有 3 万多个），deb 里的软链不会被丢。
+
+### 为什么**不**内置 Windows 版微信
+Windows 客户端是 **x86/x64** 程序，在 **ARM64 + Wine** 下要经过**两层**指令翻译，再加上微信自带的反调试/加固，实测同样不可用——这正是改版 7/8 把**抖音 Windows 客户端**从镜像里移除的同一个原因。所以本版只内置 **ARM64 原生** 版，不做 Windows 版移植。
+
+### 镜像里加的东西
+- **程序本体**：`/opt/wechat`（官方 deb 原样解包，约 750 MB，含主程序 `wechat`、小程序运行时 `RadiumWMPF/runtime/WeChatAppEx`、`XEditor` / `XFile` / OCR 模型 / VLC 插件等）。
+- **本改版原创的管理脚本**：`/opt/tiny/wechat/`
+  | 脚本 | 作用 |
+  | --- | --- |
+  | `wechat-run.sh` | 启动器：**自动适配显示环境**，多方式重试，日志写 `/tmp/wechat.log` 并同步到共享存储 |
+  | `wechat-doctor.sh` | 自检 8 项（主程序 / 24 个自带 `.so` / `ldd` 缺库 / X 可达性 / 中文字体 / 执行权限 / 进程 / 数据目录），`--fix` 可一键修复 |
+  | `wechat-uninstall.sh` | 卸载（默认保留聊天记录，可省约 750 MB） |
+  | `wechat-reinstall.sh` | 联网重新下载官方 ARM64 包安装，用于修复/升级 |
+  | `README.md` | 中文说明书（含常见问题） |
+- **桌面与菜单入口**：`/usr/bin/wechat`、`/usr/share/applications/wechat.desktop`、`~/.local/share/applications/wechat.desktop`、`~/桌面/微信.desktop`（三处 desktop 都指向 `wechat-run.sh`，避免绕过启动器）。
+- **快捷命令**：新增顶层命令组「微信」（启动微信 / 微信自检 · 修复 / 查看微信日志 / 重新安装 · 升级微信 / 卸载微信（可省约 750MB）/ 微信使用说明）；同时把「软件管理 → 常用国产软件 → 微信」改名为「**微信（已内置）**」，原来的在线安装命令**保留**（换机器/卸载重装时仍可用），并补上启动/自检/卸载/说明等命令。
+
+### 首次启动会自动适配（重要）
+容器以 **root** 运行、图形环境可能是 VNC / Termux:X11 / termux-desktop 中的任意一种，因此 `wechat-run.sh` 会：
+1. 探测 `$DISPLAY` 是否真的可用（`xdpyinfo` → `xset q` → 套接字兜底），不通就自动在 `:6 :0 :1 …` 里换一个能用的；
+2. 依次尝试 **标准启动 → `--no-sandbox` → 软件渲染（`LIBGL_ALWAYS_SOFTWARE=1` + `llvmpipe` + `--disable-gpu`）**，任一方式存活 8 秒即判定成功；
+3. 全过程写 `/tmp/wechat.log`，并镜像到 `/mnt/sdcard/wechat.log`，方便手机上看。
+
+> 说明：微信的 Chromium 组件在 root 下通常会拒绝开启沙箱，所以「自我修复」这条路径在真机上很可能会走到第 2/3 种方式，这是预期行为。
+
+### 使用提示
+- 首次启动较慢（要解压小程序运行时、初始化数据目录 `~/.xwechat`），属正常。
+- 启动异常时先跑「微信自检 / 修复」；仍不正常请把 `/tmp/wechat.log`（或共享存储里的 `wechat.log`）反馈过来。
+
+### 兼容性
+- `versionCode` 仍为 **4**，升级**不会**触发 `Global.shouldResetBootstrap`，**不会清空现有容器**。
+- ⚠️ **本版 rootfs（容器镜像）有变化**：由 115,931 个成员 / 1,014,956,652 B 变为 **116,107 个成员 / 1,297,477,742 B**（未压缩 3,715,276,800 B），新增 176 个成员就是微信本体与上述脚本。
+
+### 交付
+- `YoulongContainer_游龙容器插件_v4.2.3_wechat.apk`
+  - 大小：**1,307,284,268 B（1,246.72 MB）**
+  - SHA-256：`07FAB47FCCFB87B831E68D2A52345C9058C50AD45E47671FBBCF119D4C4DCFD6`
+  - MD5：`67A92B3728A5994B709B9088BD108FC2`
+  - 签名：V3.0，调试证书 `ce587445d4d624620c95422afac20cfeff0e291298ce707392cb6614816c6b6a`；`zipalign -c -p 4` 通过
+- 镜像自检：`E:\tcwork\check_r12.py` 逐项校验 `.tiny.yaml` 两个微信命令组、10 个新增载荷文件（权限/属主/内容特征）、`/opt/wechat` 关键文件、zstd 无损、APK 内嵌 rootfs 哈希一致
+- 包内自检：`E:\tcwork\check_apk3.py`（40 项断言，与改版 11 相同，本版未动 Android 侧代码）
+
+---
+
 ## 游龙改版 11 — 修好「第三方 App 检测不到/无法启动本应用」
 *2026-09-12*
 

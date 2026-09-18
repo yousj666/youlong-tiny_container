@@ -50,6 +50,11 @@ The upstream project already does a great job at "running a Debian desktop on An
 
 ### 3. Bundled software
 
+- **WeChat (native Linux ARM64 build, pre-installed)**: Tencent's official **aarch64** Linux WeChat is baked into the container image at `/opt/wechat` — **no Wine involved**, ready to use out of the box.
+  - Quick-command group "微信": start / self-check & repair / view log / reinstall & upgrade / uninstall / manual.
+  - The first start automatically retries (normal → `--no-sandbox` → software rendering); logs go to `/tmp/wechat.log` and are mirrored to shared storage.
+  - If it misbehaves, run "微信自检 / 修复" (it calls `wechat-doctor.sh --fix`).
+  - **The Windows client of WeChat is NOT bundled**: like the Douyin Windows client, an x86 client on ARM64 + Wine needs two layers of instruction translation, and WeChat's own anti-debugging/hardening makes it unusable in practice. Only the native ARM64 build is shipped.
 - **Steam (Windows build)**: runs the official `SteamSetup.exe` on top of the Hangover/Wine setup included in the container, with quick commands such as "install", "update to the latest version", "uninstall".
 - **Douyin web version**: `firefox-esr` with a dedicated profile, so your main browser configuration stays clean.
   - The Douyin Windows client (Electron **32-bit x86**) is effectively unusable on ARM64 + Wine (too many translation layers), so it was removed from the image.
