@@ -262,9 +262,14 @@ class MainActivity : AppCompatActivity() {
         // 已完成初始导航，不再重复导航（singleTask 下 onNewIntent 可能再次触发 ACTION_MAIN）
         if (viewModel.screen.value !is MainViewModel.Screen.Init) return
 
-        if (!Global.isFirstLaunchDone && Global.hasBuiltInRootfs() && Global.installedContainers.isEmpty()) {
+        if (!Global.isFirstLaunchDone && Global.installedContainers.isEmpty()) {
             val containerViewModel: ContainerManageViewModel by viewModels()
-            containerViewModel.autoInstallBuiltInContainer()
+            if (Global.hasBuiltInRootfs()) {
+                containerViewModel.autoInstallBuiltInContainer()
+            } else {
+                // 二改版（APK 瘦身）：无内置镜像时首次启动自动从网络下载
+                containerViewModel.startDownloadImport()
+            }
             viewModel.navigateTo(MainViewModel.Screen.ContainerManage)
             return
         }
