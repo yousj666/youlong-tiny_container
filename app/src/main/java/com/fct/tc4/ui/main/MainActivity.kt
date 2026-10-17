@@ -309,6 +309,7 @@ class MainActivity : AppCompatActivity() {
             publicDir.mkdirs()
 
             var copiedCount = 0
+            var exeFileName: String? = null
             uris.forEach { uri ->
                 try {
                     val fileName = getFileName(uri) ?: "file_${System.currentTimeMillis()}"
@@ -318,6 +319,10 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     copiedCount++
+                    // 二改版新增：记录分享的 .exe 文件，用于直接运行
+                    if (exeFileName == null && fileName.endsWith(".exe", ignoreCase = true)) {
+                        exeFileName = fileName
+                    }
                 } catch (_: Exception) { }
             }
 
@@ -325,6 +330,27 @@ class MainActivity : AppCompatActivity() {
                 Snackbar.make(binding.root,
                     getString(R.string.tc4_import_file_result, copiedCount, uris.size),
                     Snackbar.LENGTH_SHORT).show()
+            }
+
+            // 二改版新增：分享的 .exe 文件直接用容器中的 Wine 运行（无需手动调试）
+            val exe = exeFileName
+            if (exe != null && Global.installedContainers.isNotEmpty()) {
+                val code = Global.installedContainers.first()
+                // 转义文件名中的特殊字符
+                val safeName = exe.replace("'", "'\\''")
+                val wineCmd = """
+                    if command -v wine >/dev/null 2>&1; then
+                      wine "${'$'}PUBLIC_DIR/${safeName}"
+                    else
+                      echo "Wine 未安装，请在「功能」中开启 Hangover Wine 选项后重试"
+                    fi
+                """.trimIndent()
+                withContext(Dispatchers.Main) {
+                    MainViewModel.pendingCommandCode = code
+                    MainViewModel.pendingCommandText = wineCmd
+                    viewModel.navigateTo(MainViewModel.Screen.ContainerMain(code))
+                }
+                return@launch
             }
 
             if (viewModel.screen.value is MainViewModel.Screen.Init) {
